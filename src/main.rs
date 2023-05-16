@@ -50,15 +50,15 @@ enum Commands {
 }
 
 fn add(cause: Cause, filename: &Path) -> Result<(), Box<dyn Error>> {
+    let game = Game {
+        date: Utc::now(),
+        cause,
+    };
     if let Some(parent) = filename.parent() {
         if !parent.is_dir() {
             std::fs::create_dir_all(parent)?;
         }
     }
-    let game = Game {
-        date: Utc::now(),
-        cause,
-    };
     let file = OpenOptions::new()
         .write(true)
         .append(true)
