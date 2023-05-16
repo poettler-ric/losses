@@ -1,14 +1,17 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use clap::{Parser, Subcommand, ValueEnum};
-use csv::WriterBuilder;
+use csv::{ReaderBuilder, WriterBuilder};
+use derivative::Derivative;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs::OpenOptions;
 use std::path::{Path, PathBuf};
 use std::process;
 
 /// Cause for the lost game
-#[derive(Debug, Deserialize, Serialize, ValueEnum, Clone)]
+#[derive(Debug, Deserialize, Serialize, ValueEnum, Clone, Derivative, Eq)]
+#[derivative(Hash, PartialEq)]
 enum Cause {
     /// Game was lost in the opening
     Opening,
@@ -70,6 +73,29 @@ fn add(cause: Cause, filename: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn summarize(filename: &Path) -> Result<(), Box<dyn Error>> {
+    let before_thirty_days = Utc::now() - Duration::days(30);
+    let mut summary: HashMap<Cause, u32> = HashMap::new();
+    let mut reader = ReaderBuilder::new()
+        .has_headers(false)
+        .from_path(filename)?;
+    for record in reader.deserialize() {
+        let game: Game = record?;
+        if game.date > before_thirty_days {
+            summary
+                .entry(game.cause)
+                .and_modify(|count| *count += 1)
+                .or_insert(1);
+        }
+    }
+    let mut sorted: Vec<(&Cause, &u32)> = summary.iter().collect();
+    sorted.sort_by(|a, b| b.1.cmp(a.1));
+    for (cause, count) in sorted {
+        println!("{:?}: {}", cause, count);
+    }
+    Ok(())
+}
+
 fn main() {
     let csv_file = match dirs::cache_dir() {
         Some(cache_dir) => cache_dir.join("losses").join("games.csv"),
@@ -83,6 +109,11 @@ fn main() {
                 process::exit(1);
             }
         }
-        Commands::Summarize => todo!("implement summarize"),
+        Commands::Summarize => {
+            if let Err(e) = summarize(&csv_file) {
+                eprintln!("Error while summarizing {:?}: {}", csv_file, e);
+                process::exit(2);
+            }
+        }
     };
 }
