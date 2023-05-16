@@ -97,8 +97,8 @@ fn summarize(filename: &Path) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
-    let csv_file = match dirs::cache_dir() {
-        Some(cache_dir) => cache_dir.join("losses").join("games.csv"),
+    let csv_file = match dirs::data_dir() {
+        Some(data_dir) => data_dir.join("losses").join("games.csv"),
         None => PathBuf::from("games.csv"),
     };
     let cli = Cli::parse();
