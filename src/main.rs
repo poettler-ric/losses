@@ -79,7 +79,7 @@ fn main() {
     match cli.command {
         Commands::Add { cause } => {
             if let Err(e) = add(cause, &csv_file) {
-                eprintln!("Error while adding: {}", e);
+                eprintln!("Error while adding to {:?}: {}", csv_file, e);
                 process::exit(1);
             }
         }
