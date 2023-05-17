@@ -2,6 +2,8 @@ use chrono::{DateTime, Duration, Utc};
 use clap::ValueEnum;
 use csv::{ReaderBuilder, WriterBuilder};
 use derivative::Derivative;
+use rand::distributions::{Distribution, Standard};
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
@@ -22,6 +24,18 @@ pub enum Cause {
     Time,
     /// Game was gradually lost due to missing strategy
     Strategy,
+}
+
+impl Distribution<Cause> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Cause {
+        match rng.gen_range(1..=5) {
+            1 => Cause::Opening,
+            2 => Cause::Middlegame,
+            3 => Cause::Endgame,
+            4 => Cause::Time,
+            _ => Cause::Strategy,
+        }
+    }
 }
 
 /// Record of lost game

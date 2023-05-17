@@ -11,4 +11,5 @@ clap = { version = "4.2.7", features = ["derive"] }
 csv = "1.2.1"
 derivative = "2.2.0"
 dirs = "5.0.1"
+rand = "0.8.5"
 serde = { version = "1.0.163", features = ["derive"] }
