@@ -68,7 +68,7 @@ pub fn add(cause: Cause, filename: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn summarize(filename: &Path) -> Result<(), Box<dyn Error>> {
+pub fn summarize_hash(filename: &Path) -> Result<Vec<(Cause, u32)>, Box<dyn Error>> {
     let before_thirty_days = Utc::now() - Duration::days(30);
     let mut summary: HashMap<Cause, u32> = HashMap::new();
     let mut reader = ReaderBuilder::new()
@@ -83,10 +83,7 @@ pub fn summarize(filename: &Path) -> Result<(), Box<dyn Error>> {
                 .or_insert(1);
         }
     }
-    let mut sorted: Vec<(&Cause, &u32)> = summary.iter().collect();
-    sorted.sort_by(|a, b| b.1.cmp(a.1));
-    for (cause, count) in sorted {
-        println!("{:?}: {}", cause, count);
-    }
-    Ok(())
+    let mut sorted: Vec<(Cause, u32)> = summary.drain().collect();
+    sorted.sort_by(|a, b| b.1.cmp(&a.1));
+    Ok(sorted)
 }

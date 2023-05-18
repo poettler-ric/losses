@@ -33,11 +33,16 @@ fn main() {
                 process::exit(1);
             }
         }
-        Commands::Summarize => {
-            if let Err(e) = losses::summarize(&csv_file) {
+        Commands::Summarize => match losses::summarize_hash(&csv_file) {
+            Err(e) => {
                 eprintln!("Error while summarizing {:?}: {}", csv_file, e);
                 process::exit(2);
             }
-        }
+            Ok(summary) => {
+                for (cause, count) in summary {
+                    println!("{:?}: {}", cause, count);
+                }
+            }
+        },
     };
 }
